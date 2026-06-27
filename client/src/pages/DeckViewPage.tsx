@@ -354,7 +354,7 @@ export default function DeckViewPage() {
                 textTransform: 'uppercase',
               }}
             >
-              {label} ({entries.length})
+              {label} ({entries.reduce((sum, c) => sum + c.quantity_needed, 0)})
             </td>
           </tr>
           {renderCardRows(entries)}
@@ -386,7 +386,7 @@ export default function DeckViewPage() {
             textTransform: 'uppercase',
           }}
         >
-          {label} ({entries.length})
+          {label} ({entries.reduce((sum, c) => sum + c.quantity_needed, 0)})
         </td>
       </tr>
     );
@@ -407,7 +407,7 @@ export default function DeckViewPage() {
               fontStyle: 'italic',
             }}
           >
-            {type}s ({group.length})
+            {type}s ({group.reduce((sum, c) => sum + c.quantity_needed, 0)})
           </td>
         </tr>
       );
