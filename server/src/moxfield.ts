@@ -84,6 +84,13 @@ export async function fetchCollection(collectionPublicId: string): Promise<Colle
     const data = (await res.json()) as MoxfieldCollectionPage;
     totalPages = data.totalPages;
 
+    if (!Array.isArray(data.data)) {
+      throw new Error(
+        `Unexpected Moxfield collection response shape (page ${page}): ` +
+          JSON.stringify(data).slice(0, 300)
+      );
+    }
+
     for (const entry of data.data) {
       const name = entry.card.name;
       totals.set(name, (totals.get(name) ?? 0) + entry.quantity);
