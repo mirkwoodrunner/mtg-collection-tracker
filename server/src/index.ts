@@ -1,0 +1,40 @@
+import 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
+import { initDb } from './db';
+import decksRouter from './routes/decks';
+import syncRouter from './routes/sync';
+import cardsRouter from './routes/cards';
+import assignmentsRouter from './routes/assignments';
+
+const app = express();
+const PORT = process.env.PORT ?? 3001;
+
+app.use(cors());
+app.use(express.json());
+
+app.use('/api/decks', decksRouter);
+app.use('/api/sync', syncRouter);
+app.use('/api/cards', cardsRouter);
+app.use('/api/assignments', assignmentsRouter);
+
+if (process.env.NODE_ENV === 'production') {
+  const staticPath = path.join(__dirname, '../../client/dist');
+  app.use(express.static(staticPath));
+  app.get('*', (_req, res) => {
+    res.sendFile(path.join(staticPath, 'index.html'));
+  });
+}
+
+async function start() {
+  await initDb();
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+start().catch((err) => {
+  console.error('Failed to start server:', err);
+  process.exit(1);
+});
