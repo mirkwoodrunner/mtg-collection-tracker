@@ -33,56 +33,62 @@ export default function DecksPage() {
 
   return (
     <div>
-      <h2>Tracked Decks</h2>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+        <span className="section-label">{decks.length} Tracked Decks</span>
+      </div>
+
       <AddDeckForm onAdded={(deck) => setDecks((prev) => [...prev, deck])} />
       <SyncButton onSynced={loadDecks} />
 
-      {loading && <p style={{ marginTop: '1rem' }}>Loading decks...</p>}
-      {error && <p style={{ color: 'red', marginTop: '1rem' }}>{error}</p>}
-      {!loading && !error && decks.length === 0 ? (
-        <p style={{ marginTop: '1rem', color: '#888' }}>No decks tracked yet. Add one above.</p>
-      ) : !loading && !error && (
-        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
-          <thead>
-            <tr style={{ background: '#f1f2f6', textAlign: 'left' }}>
-              <th style={{ padding: '0.5rem 0.75rem' }}>Name</th>
-              <th style={{ padding: '0.5rem 0.75rem' }}>Moxfield ID</th>
-              <th style={{ padding: '0.5rem 0.75rem' }}>Last Synced</th>
-              <th style={{ padding: '0.5rem 0.75rem' }}></th>
-            </tr>
-          </thead>
-          <tbody>
-            {decks.map((deck) => (
-              <tr key={deck.id} style={{ borderBottom: '1px solid #dfe6e9' }}>
-                <td style={{ padding: '0.5rem 0.75rem' }}>
-                  <a
-                    href={`https://www.moxfield.com/decks/${deck.moxfield_public_id}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {deck.name}
-                  </a>
-                </td>
-                <td style={{ padding: '0.5rem 0.75rem', fontFamily: 'monospace', fontSize: '0.85rem' }}>
-                  {deck.moxfield_public_id}
-                </td>
-                <td style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem', color: '#636e72' }}>
-                  {deck.last_synced_at
-                    ? new Date(deck.last_synced_at).toLocaleString()
-                    : 'Never'}
-                </td>
-                <td style={{ padding: '0.5rem 0.75rem' }}>
-                  <button
-                    onClick={() => handleDelete(deck.id)}
-                    style={{ color: 'red', background: 'none', border: '1px solid red', cursor: 'pointer', borderRadius: '3px', padding: '0.2rem 0.5rem' }}
-                  >
-                    Remove
-                  </button>
-                </td>
+      {loading && <p style={{ marginTop: '1.5rem', color: 'var(--text-dim)' }}>Loading decks…</p>}
+      {error   && <p style={{ marginTop: '1.5rem', color: 'var(--red)' }}>{error}</p>}
+
+      {!loading && !error && decks.length === 0 && (
+        <p style={{ marginTop: '1.5rem', color: 'var(--text-dim)' }}>No decks tracked yet. Add one above.</p>
+      )}
+
+      {!loading && !error && decks.length > 0 && (
+        <div className="mtg-table-wrap">
+          <table className="mtg-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Moxfield ID</th>
+                <th>Last Synced</th>
+                <th></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {decks.map((deck) => (
+                <tr key={deck.id}>
+                  <td>
+                    <a
+                      href={`https://www.moxfield.com/decks/${deck.moxfield_public_id}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ fontWeight: 500, fontSize: '0.9rem' }}
+                    >
+                      {deck.name}
+                    </a>
+                  </td>
+                  <td style={{ fontFamily: 'var(--mono)', fontSize: '0.73rem', color: 'var(--text-dim)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px' }}>
+                    {deck.moxfield_public_id}
+                  </td>
+                  <td style={{ fontSize: '0.82rem', color: 'var(--text-dim)' }}>
+                    {deck.last_synced_at
+                      ? new Date(deck.last_synced_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                      : 'Never'}
+                  </td>
+                  <td style={{ textAlign: 'right' }}>
+                    <button className="btn-danger" onClick={() => handleDelete(deck.id)}>
+                      Remove
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
