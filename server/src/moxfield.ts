@@ -9,7 +9,7 @@ function sleep(ms: number): Promise<void> {
 
 interface MoxfieldCardEntry {
   quantity: number;
-  card: { name: string };
+  card: { name: string; type?: string };
 }
 
 interface MoxfieldDeckResponse {
@@ -33,6 +33,8 @@ interface MoxfieldCollectionPage {
 export interface DeckCard {
   cardName: string;
   quantity: number;
+  board: 'mainboard' | 'sideboard' | 'commander';
+  cardType: string | null;
 }
 
 export interface CollectionCard {
@@ -49,18 +51,35 @@ export async function fetchDeck(publicId: string): Promise<{ name: string; cards
   }
   const data = (await res.json()) as MoxfieldDeckResponse;
 
-  const totals = new Map<string, number>();
-  for (const zone of [data.mainboard, data.sideboard, data.commanders]) {
+  const zones: Array<[string, Record<string, MoxfieldCardEntry> | undefined]> = [
+    ['mainboard', data.mainboard],
+    ['sideboard', data.sideboard],
+    ['commander', data.commanders],
+  ];
+
+  const totals = new Map<string, DeckCard>();
+  for (const [boardName, zone] of zones) {
     if (!zone) continue;
+    const board = boardName as DeckCard['board'];
     for (const entry of Object.values(zone)) {
-      const name = entry.card.name;
-      totals.set(name, (totals.get(name) ?? 0) + entry.quantity);
+      const key = `${entry.card.name}|${board}`;
+      const existing = totals.get(key);
+      if (existing) {
+        existing.quantity += entry.quantity;
+      } else {
+        totals.set(key, {
+          cardName: entry.card.name,
+          quantity: entry.quantity,
+          board,
+          cardType: entry.card.type ?? null,
+        });
+      }
     }
   }
 
   return {
     name: data.name,
-    cards: Array.from(totals.entries()).map(([cardName, quantity]) => ({ cardName, quantity })),
+    cards: Array.from(totals.values()),
   };
 }
 

@@ -5,6 +5,7 @@ import path from 'path';
 import { initDb } from './db';
 import { syncCollection } from './syncService';
 import decksRouter from './routes/decks';
+import deckCardsRouter from './routes/deckCards';
 import syncRouter from './routes/sync';
 import cardsRouter from './routes/cards';
 import assignmentsRouter from './routes/assignments';
@@ -16,6 +17,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api/decks', decksRouter);
+app.use('/api/decks', deckCardsRouter);
 app.use('/api/sync', syncRouter);
 app.use('/api/cards', cardsRouter);
 app.use('/api/assignments', assignmentsRouter);

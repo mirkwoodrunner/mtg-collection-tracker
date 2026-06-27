@@ -17,19 +17,23 @@ assigned_totals AS (
 ),
 locations AS (
   SELECT
-    dc.card_name,
+    agg.card_name,
     json_agg(
       json_build_object(
-        'deck_id', d.id,
+        'deck_id', agg.deck_id,
         'deck_name', d.name,
-        'quantity_needed', dc.quantity_needed,
+        'quantity_needed', agg.total_needed,
         'quantity_assigned', COALESCE(a.quantity_assigned, 0)
       ) ORDER BY d.name
     ) AS locations
-  FROM deck_cards dc
-  JOIN decks d ON d.id = dc.deck_id
-  LEFT JOIN assignments a ON a.card_name = dc.card_name AND a.deck_id = dc.deck_id
-  GROUP BY dc.card_name
+  FROM (
+    SELECT card_name, deck_id, SUM(quantity_needed) AS total_needed
+    FROM deck_cards
+    GROUP BY card_name, deck_id
+  ) agg
+  JOIN decks d ON d.id = agg.deck_id
+  LEFT JOIN assignments a ON a.card_name = agg.card_name AND a.deck_id = agg.deck_id
+  GROUP BY agg.card_name
 )
 SELECT
   n.card_name,

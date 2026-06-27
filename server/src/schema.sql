@@ -10,8 +10,31 @@ CREATE TABLE IF NOT EXISTS deck_cards (
     deck_id INTEGER NOT NULL REFERENCES decks(id) ON DELETE CASCADE,
     card_name TEXT NOT NULL,
     quantity_needed INTEGER NOT NULL,
-    UNIQUE (deck_id, card_name)
+    board TEXT NOT NULL DEFAULT 'mainboard',
+    card_type TEXT,
+    UNIQUE (deck_id, card_name, board)
 );
+
+-- Migrate existing installs: add columns and update unique constraint
+ALTER TABLE deck_cards ADD COLUMN IF NOT EXISTS board TEXT NOT NULL DEFAULT 'mainboard';
+ALTER TABLE deck_cards ADD COLUMN IF NOT EXISTS card_type TEXT;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'deck_cards_deck_id_card_name_board_key'
+    AND conrelid = 'deck_cards'::regclass
+  ) THEN
+    IF EXISTS (
+      SELECT 1 FROM pg_constraint
+      WHERE conname = 'deck_cards_deck_id_card_name_key'
+      AND conrelid = 'deck_cards'::regclass
+    ) THEN
+      ALTER TABLE deck_cards DROP CONSTRAINT deck_cards_deck_id_card_name_key;
+    END IF;
+    ALTER TABLE deck_cards ADD CONSTRAINT deck_cards_deck_id_card_name_board_key UNIQUE (deck_id, card_name, board);
+  END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS collection_cards (
     card_name TEXT PRIMARY KEY,

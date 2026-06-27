@@ -12,6 +12,14 @@ export interface CardLocation {
   quantity_assigned: number;
 }
 
+export interface DeckCardDetail {
+  card_name: string;
+  board: string;
+  card_type: string | null;
+  quantity_needed: number;
+  quantity_assigned: number;
+}
+
 export interface CardRow {
   card_name: string;
   owned: number;
