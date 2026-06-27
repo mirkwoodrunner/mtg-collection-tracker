@@ -96,6 +96,63 @@ export default function DeckViewPage() {
     [deckCardDetails]
   );
 
+  async function handleAssignUnassigned(card: CardRow, detail: DeckCardDetail) {
+    if (selectedDeckId === null) return;
+    const key = `${card.card_name}|unassigned`;
+    setTransferring(key);
+
+    const targetLoc = card.locations.find((l) => l.deck_id === selectedDeckId)!;
+    const newTargetQty = detail.quantity_assigned + 1;
+
+    setCards((prev) =>
+      prev.map((c) => {
+        if (c.card_name !== card.card_name) return c;
+        return {
+          ...c,
+          assigned_total: c.assigned_total + 1,
+          unassigned: c.unassigned - 1,
+          locations: c.locations.map((l) =>
+            l.deck_id === selectedDeckId ? { ...l, quantity_assigned: newTargetQty } : l
+          ),
+        };
+      })
+    );
+    setDeckCardDetails((prev) =>
+      prev.map((d) =>
+        d.card_name === card.card_name && d.board === detail.board
+          ? { ...d, quantity_assigned: newTargetQty }
+          : d
+      )
+    );
+
+    try {
+      await setAssignment(card.card_name, selectedDeckId, newTargetQty);
+    } catch {
+      setCards((prev) =>
+        prev.map((c) => {
+          if (c.card_name !== card.card_name) return c;
+          return {
+            ...c,
+            assigned_total: c.assigned_total - 1,
+            unassigned: c.unassigned + 1,
+            locations: c.locations.map((l) =>
+              l.deck_id === selectedDeckId ? { ...l, quantity_assigned: targetLoc.quantity_assigned } : l
+            ),
+          };
+        })
+      );
+      setDeckCardDetails((prev) =>
+        prev.map((d) =>
+          d.card_name === card.card_name && d.board === detail.board
+            ? { ...d, quantity_assigned: detail.quantity_assigned }
+            : d
+        )
+      );
+    } finally {
+      setTransferring(null);
+    }
+  }
+
   async function handleTransfer(card: CardRow, sourceLoc: CardLocation) {
     if (selectedDeckId === null) return;
     const key = `${card.card_name}|${sourceLoc.deck_id}`;
@@ -170,11 +227,13 @@ export default function DeckViewPage() {
           ? 'text-red'
           : 'text-orange';
 
-      const sources = card
-        ? card.locations.filter(
-            (l) => l.deck_id !== selectedDeckId && l.quantity_assigned > 0
-          )
+      const unassigned = card ? card.unassigned : 0;
+      const deckSources = card && gap > 0
+        ? card.locations.filter((l) => l.deck_id !== selectedDeckId && l.quantity_assigned > 0)
         : [];
+      const showUnassigned = gap > 0 && unassigned > 0;
+      const unassignedKey = `${detail.card_name}|unassigned`;
+      const unassignedBusy = transferring === unassignedKey;
 
       return (
         <tr key={`${detail.card_name}|${detail.board}`}>
@@ -187,11 +246,47 @@ export default function DeckViewPage() {
             {gap > 0 ? `−${gap}` : '—'}
           </td>
           <td>
-            {sources.length === 0 ? (
+            {gap <= 0 || (!showUnassigned && deckSources.length === 0) ? (
               <span style={{ color: 'var(--text-dim)', fontSize: '0.75rem' }}>—</span>
             ) : (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                {sources.map((src) => {
+                {showUnassigned && card && (
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '3px 8px 3px 10px',
+                      background: 'rgba(22, 25, 37, 0.9)',
+                      border: '1px solid var(--green)',
+                      borderRadius: '5px',
+                      fontSize: '0.72rem',
+                      color: 'var(--text)',
+                    }}
+                  >
+                    <span style={{ color: 'var(--text-dim)' }}>Unassigned:</span>
+                    <span style={{ fontWeight: 600, color: 'var(--green)' }}>{unassigned}</span>
+                    <button
+                      onClick={() => handleAssignUnassigned(card, detail)}
+                      disabled={unassignedBusy || !!transferring}
+                      style={{
+                        padding: '1px 6px',
+                        background: 'transparent',
+                        border: '1px solid var(--green)',
+                        borderRadius: '3px',
+                        color: 'var(--green)',
+                        fontSize: '0.68rem',
+                        cursor: unassignedBusy || !!transferring ? 'not-allowed' : 'pointer',
+                        opacity: unassignedBusy || !!transferring ? 0.5 : 1,
+                        whiteSpace: 'nowrap',
+                        fontFamily: 'var(--sans)',
+                      }}
+                    >
+                      {unassignedBusy ? '…' : '+ Assign 1'}
+                    </button>
+                  </span>
+                )}
+                {deckSources.map((src) => {
                   if (!card) return null;
                   const tKey = `${card.card_name}|${src.deck_id}`;
                   const busy = transferring === tKey;
