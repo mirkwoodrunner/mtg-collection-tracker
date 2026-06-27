@@ -1,111 +1,181 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
-
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+  --bg:           #0c0e14;
+  --surface:      #13151f;
+  --surface-2:    #181b27;
+  --border:       #1f2336;
+  --border-sub:   #252a3d;
+  --text:         #b8bdd0;
+  --text-dim:     #454c68;
+  --text-bright:  #e5e0d8;
+  --gold:         #c9a650;
+  --gold-hover:   #d9b860;
+  --gold-glow:    rgba(201, 166, 80, 0.1);
+  --red:          #d45c5c;
+  --red-bg:       rgba(212, 92, 92, 0.1);
+  --green:        #5aaa6e;
+  --orange:       #d98840;
+  --sans:    'DM Sans', system-ui, -apple-system, sans-serif;
+  --display: 'Cinzel', Georgia, 'Times New Roman', serif;
+  --mono:    ui-monospace, 'Cascadia Code', 'SF Mono', monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
+*, *::before, *::after { box-sizing: border-box; }
 
 body {
   margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.5 var(--sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-h1,
-h2 {
-  font-family: var(--heading);
+#root { min-height: 100svh; }
+h1, h2, h3 { margin: 0; color: var(--text-bright); }
+p { margin: 0; }
+
+a { color: var(--gold); text-decoration: none; transition: color 0.15s; }
+a:hover { color: var(--gold-hover); text-decoration: underline; text-underline-offset: 3px; }
+
+.mtg-input {
+  padding: 0.5rem 0.9rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-bright);
+  font-family: var(--sans);
+  font-size: 0.88rem;
+  transition: border-color 0.15s;
+  outline: none;
+  appearance: none;
+}
+.mtg-input:focus { border-color: var(--gold); }
+.mtg-input::placeholder { color: var(--text-dim); opacity: 0.7; }
+.mtg-input:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-primary {
+  padding: 0.5rem 1.1rem;
+  background: transparent;
+  border: 1px solid var(--gold);
+  border-radius: 6px;
+  color: var(--gold);
+  font-family: var(--sans);
+  font-size: 0.88rem;
   font-weight: 500;
-  color: var(--text-h);
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
 }
+.btn-primary:hover:not(:disabled) { background: var(--gold-glow); }
+.btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
-}
-
-code,
-.counter {
-  font-family: var(--mono);
+.btn-secondary {
+  padding: 0.42rem 0.9rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-dim);
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
   display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: border-color 0.15s, color 0.15s;
+}
+.btn-secondary:hover:not(:disabled) { border-color: var(--text-dim); color: var(--text); }
+.btn-secondary:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-danger {
+  padding: 0.2rem 0.55rem;
+  background: transparent;
+  border: 1px solid rgba(212, 92, 92, 0.3);
   border-radius: 4px;
-  color: var(--text-h);
+  color: var(--red);
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-danger:hover { background: var(--red-bg); }
+
+.btn-stepper {
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-dim);
+  font-family: var(--sans);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: border-color 0.15s, color 0.15s;
+}
+.btn-stepper:hover { border-color: var(--gold); color: var(--gold); }
+
+.mtg-table-wrap {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 1rem;
 }
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+.mtg-table { width: 100%; border-collapse: collapse; }
+.mtg-table thead tr { background: var(--surface-2); }
+.mtg-table thead th {
+  padding: 0.55rem 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: left;
+  white-space: nowrap;
 }
+.mtg-table thead th.sortable { cursor: pointer; user-select: none; }
+.mtg-table thead th.sortable:hover { color: var(--text); }
+.mtg-table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+.mtg-table tbody tr:hover { background: var(--surface-2); }
+.mtg-table tbody tr:last-child { border-bottom: none; }
+.mtg-table tbody td { padding: 0.65rem 0.75rem; }
+
+.section-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.loc-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+.loc-chip-default {
+  background: rgba(22, 25, 37, 0.9);
+  border: 1px solid #252a3d;
+  color: #7a8094;
+}
+.loc-chip-unassigned {
+  background: rgba(217, 136, 64, 0.1);
+  border: 1px solid rgba(217, 136, 64, 0.3);
+  color: #d98840;
+}
+
+.text-red    { color: var(--red)    !important; font-weight: 600; }
+.text-green  { color: var(--green)  !important; }
+.text-orange { color: var(--orange) !important; font-weight: 600; }
+.text-dim    { color: var(--text-dim); }

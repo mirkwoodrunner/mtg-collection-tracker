@@ -11,25 +11,17 @@ interface Props {
 }
 
 export default function AssignmentStepper({
-  cardName,
-  deckId,
-  deckName,
-  quantityNeeded,
-  quantityAssigned,
-  onChanged,
+  cardName, deckId, deckName, quantityNeeded, quantityAssigned, onChanged,
 }: Props) {
   const [value, setValue] = useState(quantityAssigned);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    setValue(quantityAssigned);
-  }, [quantityAssigned]);
+  useEffect(() => { setValue(quantityAssigned); }, [quantityAssigned]);
 
   function updateValue(next: number) {
     if (next < 0) return;
     setValue(next);
     onChanged(deckId, next);
-
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
       try {
@@ -42,22 +34,14 @@ export default function AssignmentStepper({
   }
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.25rem 0' }}>
-      <span style={{ minWidth: '120px', fontSize: '0.9rem' }}>{deckName}</span>
-      <span style={{ fontSize: '0.8rem', color: '#888', minWidth: '55px' }}>needs {quantityNeeded}</span>
-      <button
-        onClick={() => updateValue(value - 1)}
-        style={{ width: '24px', height: '24px', padding: 0, cursor: 'pointer' }}
-      >
-        −
-      </button>
-      <span style={{ minWidth: '20px', textAlign: 'center' }}>{value}</span>
-      <button
-        onClick={() => updateValue(value + 1)}
-        style={{ width: '24px', height: '24px', padding: 0, cursor: 'pointer' }}
-      >
-        +
-      </button>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', padding: '0.3rem 0' }}>
+      <span style={{ minWidth: '168px', fontSize: '0.85rem', color: 'var(--text)' }}>{deckName}</span>
+      <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', minWidth: '58px' }}>needs {quantityNeeded}</span>
+      <button className="btn-stepper" onClick={() => updateValue(value - 1)}>−</button>
+      <span style={{ minWidth: '22px', textAlign: 'center', fontWeight: 600, color: 'var(--text-bright)', fontSize: '0.9rem' }}>
+        {value}
+      </span>
+      <button className="btn-stepper" onClick={() => updateValue(value + 1)}>+</button>
     </div>
   );
 }

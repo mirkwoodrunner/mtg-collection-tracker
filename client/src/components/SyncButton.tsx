@@ -26,12 +26,13 @@ export default function SyncButton({ onSynced }: Props) {
   }
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-      <button onClick={handleSync} disabled={loading}>
-        {loading ? 'Syncing...' : 'Sync All'}
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+      <button className="btn-secondary" onClick={handleSync} disabled={loading}>
+        <span style={{ fontSize: '0.9rem' }}>↻</span>
+        {loading ? 'Syncing…' : 'Sync All'}
       </button>
-      {result && <span style={{ color: 'green', fontSize: '0.85rem' }}>{result}</span>}
-      {error && <span style={{ color: 'red', fontSize: '0.85rem' }}>{error}</span>}
+      {result && <span style={{ color: 'var(--green)', fontSize: '0.8rem' }}>{result}</span>}
+      {error  && <span style={{ color: 'var(--red)',   fontSize: '0.8rem' }}>{error}</span>}
     </div>
   );
 }
