@@ -31,18 +31,17 @@ export default function DecksPage() {
     }
   }
 
-  if (loading) return <p>Loading decks...</p>;
-  if (error) return <p style={{ color: 'red' }}>{error}</p>;
-
   return (
     <div>
       <h2>Tracked Decks</h2>
       <AddDeckForm onAdded={(deck) => setDecks((prev) => [...prev, deck])} />
       <SyncButton onSynced={loadDecks} />
 
-      {decks.length === 0 ? (
+      {loading && <p style={{ marginTop: '1rem' }}>Loading decks...</p>}
+      {error && <p style={{ color: 'red', marginTop: '1rem' }}>{error}</p>}
+      {!loading && !error && decks.length === 0 ? (
         <p style={{ marginTop: '1rem', color: '#888' }}>No decks tracked yet. Add one above.</p>
-      ) : (
+      ) : !loading && !error && (
         <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
           <thead>
             <tr style={{ background: '#f1f2f6', textAlign: 'left' }}>

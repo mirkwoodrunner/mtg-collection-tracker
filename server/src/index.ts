@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { initDb } from './db';
+import { syncCollection } from './syncService';
 import decksRouter from './routes/decks';
 import syncRouter from './routes/sync';
 import cardsRouter from './routes/cards';
@@ -32,6 +33,9 @@ async function start() {
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
+  syncCollection()
+    .then((n) => console.log(`Startup collection sync: ${n} cards`))
+    .catch((err) => console.error('Startup collection sync failed:', err));
 }
 
 start().catch((err) => {
