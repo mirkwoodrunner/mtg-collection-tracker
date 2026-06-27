@@ -9,7 +9,7 @@ function sleep(ms: number): Promise<void> {
 
 interface MoxfieldCardEntry {
   quantity: number;
-  card: { name: string; type?: string };
+  card: { name: string; type?: string; type_line?: string };
 }
 
 interface MoxfieldDeckResponse {
@@ -58,10 +58,16 @@ export async function fetchDeck(publicId: string): Promise<{ name: string; cards
   ];
 
   const totals = new Map<string, DeckCard>();
+  let loggedSample = false;
   for (const [boardName, zone] of zones) {
     if (!zone) continue;
     const board = boardName as DeckCard['board'];
     for (const entry of Object.values(zone)) {
+      if (!loggedSample) {
+        console.log('[moxfield] sample card keys:', Object.keys(entry.card));
+        console.log('[moxfield] sample card type fields:', { type: entry.card.type, type_line: entry.card.type_line });
+        loggedSample = true;
+      }
       const key = `${entry.card.name}|${board}`;
       const existing = totals.get(key);
       if (existing) {
@@ -71,7 +77,7 @@ export async function fetchDeck(publicId: string): Promise<{ name: string; cards
           cardName: entry.card.name,
           quantity: entry.quantity,
           board,
-          cardType: entry.card.type ?? null,
+          cardType: entry.card.type ?? entry.card.type_line ?? null,
         });
       }
     }
