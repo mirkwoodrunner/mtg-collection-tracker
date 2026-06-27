@@ -3,6 +3,12 @@ import { getCards } from '../api';
 import type { CardRow } from '../types';
 import CardRowComponent from '../components/CardRow';
 
+const BASIC_LANDS = new Set([
+  'Plains', 'Island', 'Swamp', 'Mountain', 'Forest', 'Wastes',
+  'Snow-Covered Plains', 'Snow-Covered Island', 'Snow-Covered Swamp',
+  'Snow-Covered Mountain', 'Snow-Covered Forest',
+]);
+
 type SortKey = 'shortfall' | 'card_name' | 'owned' | 'total_needed';
 
 export default function CardsPage() {
@@ -39,9 +45,11 @@ export default function CardsPage() {
   }
 
   const displayed = useMemo(() => {
-    const filtered = filter
-      ? cards.filter((c) => c.card_name.toLowerCase().includes(filter.toLowerCase()))
-      : cards;
+    const filtered = cards.filter(
+      (c) =>
+        !BASIC_LANDS.has(c.card_name) &&
+        (!filter || c.card_name.toLowerCase().includes(filter.toLowerCase()))
+    );
     return [...filtered].sort((a, b) => {
       const aVal = a[sortKey], bVal = b[sortKey];
       if (typeof aVal === 'string' && typeof bVal === 'string')

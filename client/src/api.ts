@@ -1,4 +1,4 @@
-import type { Deck, CardRow } from './types';
+import type { Deck, CardRow, DeckCardDetail } from './types';
 
 const BASE = '/api';
 
@@ -38,6 +38,9 @@ export const triggerSync = (): Promise<{
 
 export const getCards = (): Promise<CardRow[]> =>
   fetch(`${BASE}/cards`).then((r) => handleResponse<CardRow[]>(r));
+
+export const getDeckCards = (deckId: number): Promise<DeckCardDetail[]> =>
+  fetch(`${BASE}/decks/${deckId}/cards`).then((r) => handleResponse<DeckCardDetail[]>(r));
 
 export const setAssignment = (
   cardName: string,
