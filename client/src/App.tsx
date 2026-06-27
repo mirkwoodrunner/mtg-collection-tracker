@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import DecksPage from './pages/DecksPage';
 import CardsPage from './pages/CardsPage';
+import DeckViewPage from './pages/DeckViewPage';
 import './App.css';
 
-type Tab = 'decks' | 'cards';
+type Tab = 'decks' | 'cards' | 'deck';
 
 const tabBase: React.CSSProperties = {
   padding: '0.55rem 1.3rem',
@@ -46,7 +47,7 @@ function App() {
         </header>
 
         <nav style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: '2rem' }}>
-          {(['decks', 'cards'] as Tab[]).map((t) => (
+          {(['decks', 'cards', 'deck'] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -57,7 +58,7 @@ function App() {
                 fontWeight: tab === t ? 500 : 400,
               }}
             >
-              {t.charAt(0).toUpperCase() + t.slice(1)}
+              {t === 'deck' ? 'Deck View' : t.charAt(0).toUpperCase() + t.slice(1)}
             </button>
           ))}
         </nav>
@@ -65,7 +66,7 @@ function App() {
 
       <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 2rem 4rem' }}>
         <div className="page-fade" key={tab}>
-          {tab === 'decks' ? <DecksPage /> : <CardsPage />}
+          {tab === 'decks' ? <DecksPage /> : tab === 'cards' ? <CardsPage /> : <DeckViewPage />}
         </div>
       </div>
     </div>
