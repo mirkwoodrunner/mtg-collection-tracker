@@ -9,7 +9,27 @@ function sleep(ms: number): Promise<void> {
 
 interface MoxfieldCardEntry {
   quantity: number;
-  card: { name: string; type?: string; type_line?: string };
+  card: { name: string; type?: string | number; type_line?: string };
+}
+
+// Moxfield returns card.type as a numeric enum, not a text type line
+const MOXFIELD_TYPE_MAP: Record<number, string> = {
+  3: 'Creature',
+  4: 'Sorcery',
+  5: 'Instant',
+  6: 'Artifact',
+  7: 'Enchantment',
+  8: 'Land',
+  9: 'Planeswalker',
+  10: 'Battle',
+};
+
+function resolveCardType(card: { type?: string | number; type_line?: string }): string | null {
+  if (card.type_line) return card.type_line;
+  if (card.type == null) return null;
+  const typeNum = typeof card.type === 'number' ? card.type : parseInt(String(card.type), 10);
+  if (!isNaN(typeNum)) return MOXFIELD_TYPE_MAP[typeNum] ?? null;
+  return String(card.type) || null;
 }
 
 interface MoxfieldDeckResponse {
@@ -58,16 +78,10 @@ export async function fetchDeck(publicId: string): Promise<{ name: string; cards
   ];
 
   const totals = new Map<string, DeckCard>();
-  let loggedSample = false;
   for (const [boardName, zone] of zones) {
     if (!zone) continue;
     const board = boardName as DeckCard['board'];
     for (const entry of Object.values(zone)) {
-      if (!loggedSample) {
-        console.log('[moxfield] sample card keys:', Object.keys(entry.card));
-        console.log('[moxfield] sample card type fields:', { type: entry.card.type, type_line: entry.card.type_line });
-        loggedSample = true;
-      }
       const key = `${entry.card.name}|${board}`;
       const existing = totals.get(key);
       if (existing) {
@@ -77,7 +91,7 @@ export async function fetchDeck(publicId: string): Promise<{ name: string; cards
           cardName: entry.card.name,
           quantity: entry.quantity,
           board,
-          cardType: entry.card.type ?? entry.card.type_line ?? null,
+          cardType: resolveCardType(entry.card),
         });
       }
     }
