@@ -45,18 +45,17 @@ router.post('/', async (req: Request, res: Response) => {
     );
     const deck = insertDeck.rows[0];
 
+    await query(`DELETE FROM deck_cards WHERE deck_id = $1`, [deck.id]);
     if (cards.length > 0) {
-      await query(`DELETE FROM deck_cards WHERE deck_id = $1`, [deck.id]);
       const values = cards
-        .map((_, i) => `($1, $${i * 2 + 2}, $${i * 2 + 3})`)
+        .map((_, i) => `($1, $${i * 4 + 2}, $${i * 4 + 3}, $${i * 4 + 4}, $${i * 4 + 5})`)
         .join(', ');
       const params: unknown[] = [deck.id];
       for (const c of cards) {
-        params.push(c.cardName, c.quantity);
+        params.push(c.cardName, c.quantity, c.board, c.cardType);
       }
       await query(
-        `INSERT INTO deck_cards (deck_id, card_name, quantity_needed) VALUES ${values}
-         ON CONFLICT (deck_id, card_name) DO UPDATE SET quantity_needed = EXCLUDED.quantity_needed`,
+        `INSERT INTO deck_cards (deck_id, card_name, quantity_needed, board, card_type) VALUES ${values}`,
         params
       );
     }
