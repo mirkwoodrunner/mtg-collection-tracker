@@ -40,12 +40,22 @@ function resolveCardType(card: { type?: string | number; type_line?: string }): 
   return String(card.type) || null;
 }
 
+// Token entries from Moxfield may be flat card objects or wrapped { card: {} } entries.
+interface MoxfieldTokenCard {
+  name?: string;
+  type_line?: string;
+  oracle_text?: string;
+  power?: string;
+  toughness?: string;
+  colors?: string[];
+}
+
 interface MoxfieldDeckResponse {
   name: string;
   mainboard?: Record<string, MoxfieldCardEntry>;
   sideboard?: Record<string, MoxfieldCardEntry>;
   commanders?: Record<string, MoxfieldCardEntry>;
-  tokens?: Record<string, MoxfieldCardEntry>;
+  tokens?: MoxfieldTokenCard[] | Record<string, MoxfieldTokenCard | MoxfieldCardEntry>;
 }
 
 interface MoxfieldCollectionEntry {
@@ -116,10 +126,19 @@ export async function fetchDeck(publicId: string): Promise<{ name: string; cards
     }
   }
 
+  // Normalise whichever token shape Moxfield returns into flat card objects:
+  //   - array of card objects: [{ name, type_line, … }]
+  //   - record of flat cards:  { id: { name, type_line, … } }
+  //   - record of wrapped entries (same as mainboard): { id: { card: { name, … } } }
+  const rawTokens: MoxfieldTokenCard[] = !data.tokens
+    ? []
+    : Array.isArray(data.tokens)
+    ? data.tokens
+    : Object.values(data.tokens).map((e) => (e as MoxfieldCardEntry).card ?? (e as MoxfieldTokenCard));
+
   const tokenMap = new Map<string, DeckToken>();
-  for (const entry of Object.values(data.tokens ?? {})) {
-    if (!entry.card) continue;
-    const c = entry.card;
+  for (const c of rawTokens) {
+    if (!c?.name) continue;
     const typeLine = c.type_line ?? null;
     const power = c.power ?? null;
     const toughness = c.toughness ?? null;
