@@ -140,6 +140,7 @@ export async function fetchDeck(publicId: string): Promise<{ name: string; cards
   for (const c of rawTokens) {
     if (!c?.name) continue;
     const typeLine = c.type_line ?? null;
+    if (typeLine && !typeLine.includes('Token') && !typeLine.includes('Emblem')) continue;
     const power = c.power ?? null;
     const toughness = c.toughness ?? null;
     const colors = (c.colors ?? []).join(',');
