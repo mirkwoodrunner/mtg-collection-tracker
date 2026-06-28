@@ -9,6 +9,7 @@ import deckCardsRouter from './routes/deckCards';
 import syncRouter from './routes/sync';
 import cardsRouter from './routes/cards';
 import assignmentsRouter from './routes/assignments';
+import tokensRouter from './routes/tokens';
 
 const app = express();
 const PORT = process.env.PORT ?? 3001;
@@ -21,6 +22,7 @@ app.use('/api/decks', deckCardsRouter);
 app.use('/api/sync', syncRouter);
 app.use('/api/cards', cardsRouter);
 app.use('/api/assignments', assignmentsRouter);
+app.use('/api/tokens', tokensRouter);
 
 if (process.env.NODE_ENV === 'production') {
   const staticPath = path.join(__dirname, '../../client/dist');

@@ -9,7 +9,15 @@ function sleep(ms: number): Promise<void> {
 
 interface MoxfieldCardEntry {
   quantity: number;
-  card: { name: string; type?: string | number; type_line?: string };
+  card: {
+    name: string;
+    type?: string | number;
+    type_line?: string;
+    oracle_text?: string;
+    power?: string;
+    toughness?: string;
+    colors?: string[];
+  };
 }
 
 // Moxfield returns card.type as a numeric enum, not a text type line
@@ -37,6 +45,7 @@ interface MoxfieldDeckResponse {
   mainboard?: Record<string, MoxfieldCardEntry>;
   sideboard?: Record<string, MoxfieldCardEntry>;
   commanders?: Record<string, MoxfieldCardEntry>;
+  tokens?: Record<string, MoxfieldCardEntry>;
 }
 
 interface MoxfieldCollectionEntry {
@@ -57,12 +66,21 @@ export interface DeckCard {
   cardType: string | null;
 }
 
+export interface DeckToken {
+  cardName: string;
+  typeLine: string | null;
+  oracleText: string | null;
+  colors: string;
+  power: string | null;
+  toughness: string | null;
+}
+
 export interface CollectionCard {
   cardName: string;
   quantityOwned: number;
 }
 
-export async function fetchDeck(publicId: string): Promise<{ name: string; cards: DeckCard[] }> {
+export async function fetchDeck(publicId: string): Promise<{ name: string; cards: DeckCard[]; tokens: DeckToken[] }> {
   const res = await fetch(`${DECK_API}/${publicId}`, {
     headers: { 'User-Agent': 'mtg-collection-tracker/1.0' },
   });
@@ -97,9 +115,30 @@ export async function fetchDeck(publicId: string): Promise<{ name: string; cards
     }
   }
 
+  const tokenMap = new Map<string, DeckToken>();
+  for (const entry of Object.values(data.tokens ?? {})) {
+    const c = entry.card;
+    const typeLine = c.type_line ?? null;
+    const power = c.power ?? null;
+    const toughness = c.toughness ?? null;
+    const colors = (c.colors ?? []).join(',');
+    const key = `${c.name}|${typeLine}|${power}|${toughness}`;
+    if (!tokenMap.has(key)) {
+      tokenMap.set(key, {
+        cardName: c.name,
+        typeLine,
+        oracleText: c.oracle_text ?? null,
+        colors,
+        power,
+        toughness,
+      });
+    }
+  }
+
   return {
     name: data.name,
     cards: Array.from(totals.values()),
+    tokens: Array.from(tokenMap.values()),
   };
 }
 
