@@ -48,3 +48,14 @@ CREATE TABLE IF NOT EXISTS assignments (
     quantity_assigned INTEGER NOT NULL CHECK (quantity_assigned > 0),
     UNIQUE (card_name, deck_id)
 );
+
+CREATE TABLE IF NOT EXISTS deck_tokens (
+    id SERIAL PRIMARY KEY,
+    deck_id INTEGER NOT NULL REFERENCES decks(id) ON DELETE CASCADE,
+    card_name TEXT NOT NULL,
+    type_line TEXT,
+    oracle_text TEXT,
+    colors TEXT NOT NULL DEFAULT '',
+    power TEXT,
+    toughness TEXT
+);

@@ -29,3 +29,13 @@ export interface CardRow {
   unassigned: number;
   locations: CardLocation[];
 }
+
+export interface TokenRow {
+  card_name: string;
+  type_line: string | null;
+  oracle_text: string | null;
+  colors: string;
+  power: string | null;
+  toughness: string | null;
+  deck_names: string[];
+}

@@ -26,7 +26,7 @@ export async function syncDecks(): Promise<number> {
   const decks = decksResult.rows;
 
   for (const deck of decks) {
-    const { name, cards } = await fetchDeck(deck.moxfield_public_id);
+    const { name, cards, tokens } = await fetchDeck(deck.moxfield_public_id);
 
     await query('DELETE FROM deck_cards WHERE deck_id = $1', [deck.id]);
 
@@ -37,6 +37,22 @@ export async function syncDecks(): Promise<number> {
         params.push(c.cardName, c.quantity, c.board, c.cardType);
       }
       await query(`INSERT INTO deck_cards (deck_id, card_name, quantity_needed, board, card_type) VALUES ${values}`, params);
+    }
+
+    await query('DELETE FROM deck_tokens WHERE deck_id = $1', [deck.id]);
+
+    if (tokens.length > 0) {
+      const values = tokens.map((_, i) =>
+        `($1, $${i * 6 + 2}, $${i * 6 + 3}, $${i * 6 + 4}, $${i * 6 + 5}, $${i * 6 + 6}, $${i * 6 + 7})`
+      ).join(', ');
+      const params: unknown[] = [deck.id];
+      for (const t of tokens) {
+        params.push(t.cardName, t.typeLine, t.oracleText, t.colors, t.power, t.toughness);
+      }
+      await query(
+        `INSERT INTO deck_tokens (deck_id, card_name, type_line, oracle_text, colors, power, toughness) VALUES ${values}`,
+        params
+      );
     }
 
     await query('UPDATE decks SET name = $1, last_synced_at = NOW() WHERE id = $2', [name, deck.id]);
