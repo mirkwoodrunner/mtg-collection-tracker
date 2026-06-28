@@ -100,6 +100,7 @@ export async function fetchDeck(publicId: string): Promise<{ name: string; cards
     if (!zone) continue;
     const board = boardName as DeckCard['board'];
     for (const entry of Object.values(zone)) {
+      if (!entry.card) continue;
       const key = `${entry.card.name}|${board}`;
       const existing = totals.get(key);
       if (existing) {
@@ -117,6 +118,7 @@ export async function fetchDeck(publicId: string): Promise<{ name: string; cards
 
   const tokenMap = new Map<string, DeckToken>();
   for (const entry of Object.values(data.tokens ?? {})) {
+    if (!entry.card) continue;
     const c = entry.card;
     const typeLine = c.type_line ?? null;
     const power = c.power ?? null;
