@@ -1,95 +1,70 @@
-import { useEffect, useState } from 'react';
-import { getDecks, deleteDeck } from '../api';
-import type { Deck } from '../types';
+import { useEffect, useMemo, useState } from 'react';
+import { getCards } from '../api';
+import type { CardRow, Deck } from '../types';
+import { BASIC_LANDS } from '../cardUtils';
 import AddDeckForm from '../components/AddDeckForm';
-import SyncButton from '../components/SyncButton';
 
-export default function DecksPage() {
-  const [decks, setDecks] = useState<Deck[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+interface Props {
+  decks: Deck[];
+  loading: boolean;
+  error: string | null;
+  onAdded: (deck: Deck) => void;
+}
 
-  async function loadDecks() {
-    try {
-      setDecks(await getDecks());
-    } catch (err) {
-      setError(String(err));
-    } finally {
-      setLoading(false);
+export default function DecksPage({ decks, loading, error, onAdded }: Props) {
+  const [cards, setCards] = useState<CardRow[]>([]);
+
+  useEffect(() => {
+    getCards().then(setCards).catch(() => setCards([]));
+  }, [decks.length]);
+
+  // Per deck: copies needed vs copies assigned (capped at needed), basic lands excluded.
+  const stats = useMemo(() => {
+    const m = new Map<number, { inBox: number; total: number }>();
+    for (const c of cards) {
+      if (BASIC_LANDS.has(c.card_name)) continue;
+      for (const loc of c.locations ?? []) {
+        const s = m.get(loc.deck_id) ?? { inBox: 0, total: 0 };
+        const needed = Number(loc.quantity_needed);
+        s.total += needed;
+        s.inBox += Math.min(Number(loc.quantity_assigned), needed);
+        m.set(loc.deck_id, s);
+      }
     }
-  }
-
-  useEffect(() => { loadDecks(); }, []);
-
-  async function handleDelete(id: number) {
-    if (!confirm('Remove this deck from tracking?')) return;
-    try {
-      await deleteDeck(id);
-      setDecks((prev) => prev.filter((d) => d.id !== id));
-    } catch (err) {
-      alert(String(err));
-    }
-  }
+    return m;
+  }, [cards]);
 
   return (
-    <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-        <span className="section-label">{decks.length} Tracked Decks</span>
+    <>
+      <div className="page-head">
+        <h1 className="title">Decks</h1>
+        <AddDeckForm onAdded={onAdded} />
       </div>
 
-      <AddDeckForm onAdded={(deck) => setDecks((prev) => [...prev, deck])} />
-      <SyncButton onSynced={loadDecks} />
-
-      {loading && <p style={{ marginTop: '1.5rem', color: 'var(--text-dim)' }}>Loading decks…</p>}
-      {error   && <p style={{ marginTop: '1.5rem', color: 'var(--red)' }}>{error}</p>}
-
+      {loading && <p className="empty-state">Loading decks…</p>}
+      {error && <p className="warn">{error}</p>}
       {!loading && !error && decks.length === 0 && (
-        <p style={{ marginTop: '1.5rem', color: 'var(--text-dim)' }}>No decks tracked yet. Add one above.</p>
+        <p className="empty-state">No decks yet. Paste a Moxfield deck URL above.</p>
       )}
 
-      {!loading && !error && decks.length > 0 && (
-        <div className="mtg-table-wrap">
-          <table className="mtg-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Moxfield ID</th>
-                <th>Last Synced</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {decks.map((deck) => (
-                <tr key={deck.id}>
-                  <td>
-                    <a
-                      href={`https://www.moxfield.com/decks/${deck.moxfield_public_id}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{ fontWeight: 500, fontSize: '0.9rem' }}
-                    >
-                      {deck.name}
-                    </a>
-                  </td>
-                  <td style={{ fontFamily: 'var(--mono)', fontSize: '0.73rem', color: 'var(--text-dim)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px' }}>
-                    {deck.moxfield_public_id}
-                  </td>
-                  <td style={{ fontSize: '0.82rem', color: 'var(--text-dim)' }}>
-                    {deck.last_synced_at
-                      ? new Date(deck.last_synced_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                      : 'Never'}
-                  </td>
-                  <td style={{ textAlign: 'right' }}>
-                    <button className="btn-danger" onClick={() => handleDelete(deck.id)}>
-                      Remove
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {decks.length > 0 && (
+        <section className="deck-grid" aria-label="Tracked decks">
+          {decks.map((deck) => {
+            const s = stats.get(deck.id);
+            const pct = s && s.total > 0 ? (s.inBox / s.total) * 100 : 0;
+            const done = !!s && s.total > 0 && s.inBox === s.total;
+            return (
+              <a key={deck.id} href={`#/deck/${deck.id}`} className="deck-tile">
+                <h2 className="deck-name">{deck.name}</h2>
+                <div className="bar" aria-hidden="true">
+                  <div className={`bar-fill${done ? ' done' : ''}`} style={{ width: `${pct}%` }} />
+                </div>
+                <span className="count">{s ? `${s.inBox} / ${s.total}` : '—'}</span>
+              </a>
+            );
+          })}
+        </section>
       )}
-    </div>
+    </>
   );
 }

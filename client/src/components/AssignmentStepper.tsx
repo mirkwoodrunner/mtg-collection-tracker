@@ -39,17 +39,23 @@ export default function AssignmentStepper({
   }
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', padding: '0.3rem 0' }}>
-      <span style={{ minWidth: '168px', fontSize: '0.85rem', color: 'var(--text)' }}>{deckName}</span>
-      <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', minWidth: '58px' }}>needs {quantityNeeded}</span>
-      <button className="btn-stepper" onClick={() => updateValue(value - 1)} disabled={value === 0}>−</button>
-      <span style={{ minWidth: '22px', textAlign: 'center', fontWeight: 600, color: 'var(--text-bright)', fontSize: '0.9rem' }}>
-        {value}
-      </span>
+    <div className="stepper-row">
+      <span className="stepper-deck">{deckName}</span>
+      <span className="stepper-need">needs {quantityNeeded}</span>
+      <button
+        className="btn-stepper"
+        onClick={() => updateValue(value - 1)}
+        disabled={value === 0}
+        aria-label={`Remove one from ${deckName}`}
+      >
+        −
+      </button>
+      <span className="stepper-val">{value}</span>
       <button
         className="btn-stepper"
         onClick={() => updateValue(value + 1)}
         disabled={!canAdd}
+        aria-label={`Add one to ${deckName}`}
         title={canAdd ? undefined : 'No unassigned copies left'}
       >
         +
