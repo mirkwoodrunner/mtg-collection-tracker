@@ -58,7 +58,7 @@ Cards are matched by `card.name` string only. Foil/nonfoil, printing, and binder
 
 ### Over-allocation
 
-The app allows `SUM(assignments.quantity_assigned)` for a card to exceed `collection_cards.quantity_owned`. This is surfaced in the UI as a warning (`unassigned < 0`) but not constrained in the DB. This is intentional — the user may not have sorted it out yet.
+Assigning more copies of a card than are owned is not allowed. `POST /api/assignments` rejects (400) any increase that would push `SUM(assignments.quantity_assigned)` past `collection_cards.quantity_owned`. Decreases are always accepted. The client disables the `+` stepper when a card has no unassigned copies, and Deck View only offers "+ Assign 1" when `unassigned > 0`. Transfers between decks are sent as decrement-source then increment-target, so they never trip the check.
 
 ## Moxfield API endpoints used
 
