@@ -120,7 +120,8 @@ a:hover { color: var(--gold-hover); text-decoration: underline; text-underline-o
   padding: 0;
   transition: border-color 0.15s, color 0.15s;
 }
-.btn-stepper:hover { border-color: var(--gold); color: var(--gold); }
+.btn-stepper:hover:not(:disabled) { border-color: var(--gold); color: var(--gold); }
+.btn-stepper:disabled { opacity: 0.35; cursor: not-allowed; }
 
 .mtg-table-wrap {
   border: 1px solid var(--border);

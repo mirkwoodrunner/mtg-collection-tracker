@@ -18,6 +18,8 @@ export default function CardRow({ card, onAssignmentChanged }: Props) {
     onAssignmentChanged(card.card_name, deckId, newQty);
   }
 
+  const free = card.owned - localLocations.reduce((sum, loc) => sum + loc.quantity_assigned, 0);
+
   const shortfallClass = card.shortfall > 0 ? 'text-red' : '';
   const unassignedClass =
     card.unassigned < 0 ? 'text-red' : card.unassigned > 0 ? 'text-orange' : 'text-dim';
@@ -70,6 +72,7 @@ export default function CardRow({ card, onAssignmentChanged }: Props) {
                 deckName={loc.deck_name}
                 quantityNeeded={loc.quantity_needed}
                 quantityAssigned={loc.quantity_assigned}
+                canAdd={free > 0}
                 onChanged={handleStepperChange}
               />
             ))}

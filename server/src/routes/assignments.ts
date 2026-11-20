@@ -31,6 +31,25 @@ router.post('/', async (req: Request, res: Response) => {
       return;
     }
 
+    // Block any increase that would assign more copies than are owned.
+    // Decreases are always allowed so existing over-allocations can be fixed.
+    const check = await query<{ owned: number; others: number; current: number }>(
+      `SELECT
+         COALESCE((SELECT quantity_owned FROM collection_cards WHERE card_name = $1), 0) AS owned,
+         COALESCE((SELECT SUM(quantity_assigned) FROM assignments
+                   WHERE card_name = $1 AND deck_id <> $2), 0)::int AS others,
+         COALESCE((SELECT quantity_assigned FROM assignments
+                   WHERE card_name = $1 AND deck_id = $2), 0) AS current`,
+      [card_name, deck_id]
+    );
+    const { owned, others, current } = check.rows[0];
+    if (quantity_assigned > current && others + quantity_assigned > owned) {
+      res.status(400).json({
+        error: `Only ${Math.max(owned - others, 0)} of ${owned} copies of ${card_name} are unassigned`,
+      });
+      return;
+    }
+
     const result = await query<Assignment>(
       `INSERT INTO assignments (card_name, deck_id, quantity_assigned)
        VALUES ($1, $2, $3)
