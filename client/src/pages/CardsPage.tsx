@@ -2,12 +2,8 @@ import { useEffect, useState, useMemo } from 'react';
 import { getCards } from '../api';
 import type { CardRow } from '../types';
 import CardRowComponent from '../components/CardRow';
+import { BASIC_LANDS } from '../cardUtils';
 
-const BASIC_LANDS = new Set([
-  'Plains', 'Island', 'Swamp', 'Mountain', 'Forest', 'Wastes',
-  'Snow-Covered Plains', 'Snow-Covered Island', 'Snow-Covered Swamp',
-  'Snow-Covered Mountain', 'Snow-Covered Forest',
-]);
 
 type SortKey = 'shortfall' | 'card_name' | 'owned' | 'total_needed';
 
@@ -38,8 +34,8 @@ export default function CardsPage() {
         const newLocations = c.locations.map((loc) =>
           loc.deck_id === deckId ? { ...loc, quantity_assigned: newQty } : loc
         );
-        const assignedTotal = newLocations.reduce((sum, loc) => sum + loc.quantity_assigned, 0);
-        return { ...c, locations: newLocations, assigned_total: assignedTotal, unassigned: c.owned - assignedTotal };
+        const assignedTotal = newLocations.reduce((sum, loc) => sum + Number(loc.quantity_assigned), 0);
+        return { ...c, locations: newLocations, assigned_total: assignedTotal, unassigned: Number(c.owned) - assignedTotal };
       })
     );
   }
@@ -51,54 +47,54 @@ export default function CardsPage() {
         (!filter || c.card_name.toLowerCase().includes(filter.toLowerCase()))
     );
     return [...filtered].sort((a, b) => {
-      const aVal = a[sortKey], bVal = b[sortKey];
-      if (typeof aVal === 'string' && typeof bVal === 'string')
-        return sortAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-      return sortAsc ? (aVal as number) - (bVal as number) : (bVal as number) - (aVal as number);
+      if (sortKey === 'card_name')
+        return sortAsc ? a.card_name.localeCompare(b.card_name) : b.card_name.localeCompare(a.card_name);
+      const diff = Number(a[sortKey]) - Number(b[sortKey]);
+      return sortAsc ? diff : -diff;
     });
   }, [cards, filter, sortKey, sortAsc]);
 
-  if (loading) return <p style={{ color: 'var(--text-dim)' }}>Loading cards…</p>;
-  if (error)   return <p style={{ color: 'var(--red)' }}>{error}</p>;
+  if (loading) return <p className="empty-state">Loading cards…</p>;
+  if (error)   return <p className="warn">{error}</p>;
 
   const arrow = (key: SortKey) => sortKey === key ? (sortAsc ? ' ▲' : ' ▼') : '';
 
   return (
-    <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+    <>
+      <div className="page-head">
+        <h1 className="title">Cards</h1>
+      </div>
+
+      <div className="toolbar">
         <input
-          className="mtg-input"
-          type="text"
-          placeholder="Filter by card name…"
+          className="input"
+          type="search"
+          aria-label="Filter by card name"
+          placeholder="Card name"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          style={{ width: '240px' }}
         />
-        <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>
-          {displayed.length} card{displayed.length !== 1 ? 's' : ''}
-        </span>
-        {cards.some((c) => c.unassigned < 0) && (
-          <span style={{ fontSize: '0.8rem', color: 'var(--red)', fontWeight: 600 }}>
-            ⚠ Some cards over-allocated
-          </span>
+        <span className="dim mono" style={{ fontSize: 13 }}>{displayed.length}</span>
+        {cards.some((c) => Number(c.unassigned) < 0) && (
+          <span className="warn" style={{ fontSize: 13 }}>Some cards have more copies assigned than owned</span>
         )}
       </div>
 
       {displayed.length === 0 ? (
-        <p style={{ color: 'var(--text-dim)' }}>
-          {filter ? 'No cards match the filter.' : 'No cards found. Add decks and sync to populate.'}
+        <p className="empty-state">
+          {filter ? 'No cards match.' : 'No cards yet. Add decks and sync.'}
         </p>
       ) : (
-        <div className="mtg-table-wrap" style={{ overflowX: 'auto' }}>
-          <table className="mtg-table" style={{ fontSize: '0.88rem' }}>
+        <div className="table-wrap">
+          <table className="tbl">
             <thead>
               <tr>
-                <th className="sortable" onClick={() => handleSort('card_name')}>Card Name{arrow('card_name')}</th>
-                <th className="sortable" onClick={() => handleSort('owned')} style={{ textAlign: 'center' }}>Own{arrow('owned')}</th>
-                <th className="sortable" onClick={() => handleSort('total_needed')} style={{ textAlign: 'center' }}>Need{arrow('total_needed')}</th>
-                <th className="sortable" onClick={() => handleSort('shortfall')} style={{ textAlign: 'center' }}>Short{arrow('shortfall')}</th>
-                <th>Locations</th>
-                <th style={{ textAlign: 'center' }}>Free</th>
+                <th className="sortable" onClick={() => handleSort('card_name')}>Card{arrow('card_name')}</th>
+                <th className="sortable num" onClick={() => handleSort('owned')}>Own{arrow('owned')}</th>
+                <th className="sortable num" onClick={() => handleSort('total_needed')}>Need{arrow('total_needed')}</th>
+                <th className="sortable num" onClick={() => handleSort('shortfall')}>Short{arrow('shortfall')}</th>
+                <th>Decks</th>
+                <th className="num">Free</th>
               </tr>
             </thead>
             <tbody>
@@ -113,6 +109,6 @@ export default function CardsPage() {
           </table>
         </div>
       )}
-    </div>
+    </>
   );
 }

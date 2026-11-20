@@ -28,25 +28,20 @@ export default function AddDeckForm({ onAdded }: Props) {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}
-    >
+    <form className="add-form" onSubmit={handleSubmit}>
       <input
-        className="mtg-input"
+        className="input"
         type="text"
-        placeholder="Moxfield deck URL or public ID"
+        aria-label="Moxfield deck URL or public ID"
+        placeholder="Moxfield deck URL"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        style={{ flex: '1 1 280px' }}
         disabled={loading}
       />
-      <button className="btn-primary" type="submit" disabled={loading || !value.trim()}>
-        {loading ? 'Adding…' : '+ Add Deck'}
+      <button className="btn" type="submit" disabled={loading || !value.trim()}>
+        {loading ? 'Adding…' : 'Add'}
       </button>
-      {error && (
-        <span style={{ color: 'var(--red)', width: '100%', fontSize: '0.82rem' }}>{error}</span>
-      )}
+      {error && <span className="form-error" role="alert">{error}</span>}
     </form>
   );
 }

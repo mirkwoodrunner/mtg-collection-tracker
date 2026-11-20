@@ -48,68 +48,58 @@ export default function TokensPage() {
     });
   }, [tokens, filter, sortKey, sortAsc]);
 
-  if (loading) return <p style={{ color: 'var(--text-dim)' }}>Loading tokens…</p>;
-  if (error)   return <p style={{ color: 'var(--red)' }}>{error}</p>;
+  if (loading) return <p className="empty-state">Loading tokens…</p>;
+  if (error)   return <p className="warn">{error}</p>;
 
   const arrow = (key: SortKey) => sortKey === key ? (sortAsc ? ' ▲' : ' ▼') : '';
 
   return (
-    <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+    <>
+      <div className="page-head">
+        <h1 className="title">Tokens</h1>
+      </div>
+
+      <div className="toolbar">
         <input
-          className="mtg-input"
-          type="text"
-          placeholder="Filter by token name…"
+          className="input"
+          type="search"
+          aria-label="Filter by token name"
+          placeholder="Token name"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          style={{ width: '240px' }}
         />
-        <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>
-          {displayed.length} token{displayed.length !== 1 ? 's' : ''}
-        </span>
+        <span className="dim mono" style={{ fontSize: 13 }}>{displayed.length}</span>
       </div>
 
       {tokens.length === 0 && !filter ? (
-        <p style={{ color: 'var(--text-dim)' }}>No tokens found. Sync your decks to load token data.</p>
+        <p className="empty-state">No tokens yet. Sync to load token data.</p>
       ) : displayed.length === 0 ? (
-        <p style={{ color: 'var(--text-dim)' }}>No tokens match the filter.</p>
+        <p className="empty-state">No tokens match.</p>
       ) : (
-        <div className="mtg-table-wrap" style={{ overflowX: 'auto' }}>
-          <table className="mtg-table" style={{ fontSize: '0.88rem' }}>
+        <div className="table-wrap">
+          <table className="tbl">
             <thead>
               <tr>
                 <th className="sortable" onClick={() => handleSort('card_name')}>Name{arrow('card_name')}</th>
                 <th className="sortable" onClick={() => handleSort('colors')}>Color{arrow('colors')}</th>
                 <th className="sortable" onClick={() => handleSort('type_line')}>Type{arrow('type_line')}</th>
-                <th>Card Text</th>
-                <th style={{ textAlign: 'center' }}>P/T</th>
+                <th>Text</th>
+                <th className="num">P/T</th>
                 <th>Decks</th>
               </tr>
             </thead>
             <tbody>
               {displayed.map((token, i) => (
                 <tr key={i}>
-                  <td style={{ fontWeight: 500, color: 'var(--text-bright)', whiteSpace: 'nowrap' }}>
-                    {token.card_name}
-                  </td>
-                  <td style={{ whiteSpace: 'nowrap', color: 'var(--text-dim)' }}>
-                    {formatColors(token.colors)}
-                  </td>
-                  <td style={{ color: 'var(--text-dim)', whiteSpace: 'nowrap' }}>
-                    {token.type_line ?? '—'}
-                  </td>
-                  <td style={{ color: 'var(--text)', maxWidth: '260px', lineHeight: '1.4' }}>
-                    {token.oracle_text ?? ''}
-                  </td>
-                  <td style={{ textAlign: 'center', color: 'var(--text-dim)', whiteSpace: 'nowrap', fontFamily: 'var(--mono)', fontSize: '0.82rem' }}>
-                    {token.power != null ? `${token.power}/${token.toughness}` : ''}
-                  </td>
+                  <td className="card-name" style={{ whiteSpace: 'nowrap' }}>{token.card_name}</td>
+                  <td className="dim" style={{ whiteSpace: 'nowrap' }}>{formatColors(token.colors)}</td>
+                  <td className="dim" style={{ whiteSpace: 'nowrap' }}>{token.type_line ?? '—'}</td>
+                  <td style={{ maxWidth: 300 }}>{token.oracle_text ?? ''}</td>
+                  <td className="num">{token.power != null ? `${token.power}/${token.toughness}` : ''}</td>
                   <td>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
+                    <div className="chips">
                       {token.deck_names.map((name) => (
-                        <span key={name} className="loc-chip loc-chip-default" style={{ fontSize: '0.75rem' }}>
-                          {name}
-                        </span>
+                        <span key={name} className="chip">{name}</span>
                       ))}
                     </div>
                   </td>
@@ -119,6 +109,6 @@ export default function TokensPage() {
           </table>
         </div>
       )}
-    </div>
+    </>
   );
 }

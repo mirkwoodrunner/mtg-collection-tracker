@@ -18,52 +18,34 @@ export default function CardRow({ card, onAssignmentChanged }: Props) {
     onAssignmentChanged(card.card_name, deckId, newQty);
   }
 
-  const free = card.owned - localLocations.reduce((sum, loc) => sum + loc.quantity_assigned, 0);
-
-  const shortfallClass = card.shortfall > 0 ? 'text-red' : '';
-  const unassignedClass =
-    card.unassigned < 0 ? 'text-red' : card.unassigned > 0 ? 'text-orange' : 'text-dim';
+  const free = Number(card.owned) - localLocations.reduce((sum, loc) => sum + Number(loc.quantity_assigned), 0);
+  const shortfall = Number(card.shortfall);
 
   return (
     <>
-      <tr
-        onClick={() => setExpanded((e) => !e)}
-        style={{ cursor: 'pointer', userSelect: 'none' }}
-      >
-        <td style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 500, color: 'var(--text-bright)' }}>
-          <span style={{ fontSize: '0.6rem', color: 'var(--text-dim)', flexShrink: 0 }}>
-            {expanded ? '▼' : '▶'}
-          </span>
+      <tr className="clickable" onClick={() => setExpanded((e) => !e)} aria-expanded={expanded}>
+        <td className="card-name">
+          <span className="caret" aria-hidden="true">{expanded ? '▼' : '▶'}</span>
           {card.card_name}
         </td>
-        <td style={{ textAlign: 'center' }}>{card.owned}</td>
-        <td style={{ textAlign: 'center' }}>{card.total_needed}</td>
-        <td className={shortfallClass} style={{ textAlign: 'center' }}>
-          {card.shortfall > 0 ? `−${card.shortfall}` : '—'}
-        </td>
+        <td className="num">{card.owned}</td>
+        <td className="num">{card.total_needed}</td>
+        <td className={`num${shortfall > 0 ? ' warn' : ' dim'}`}>{shortfall > 0 ? shortfall : '—'}</td>
         <td>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+          <div className="chips">
             {localLocations.map((loc) => (
-              <span
-                key={loc.deck_id}
-                className={`loc-chip ${loc.quantity_assigned === 0 ? 'loc-chip-unassigned' : 'loc-chip-default'}`}
-              >
-                {loc.deck_name}: {loc.quantity_assigned}/{loc.quantity_needed}
+              <span key={loc.deck_id} className={`chip${Number(loc.quantity_assigned) === 0 ? ' empty' : ''}`}>
+                {loc.deck_name} {loc.quantity_assigned}/{loc.quantity_needed}
               </span>
             ))}
           </div>
         </td>
-        <td className={unassignedClass} style={{ textAlign: 'center' }}>
-          {card.unassigned < 0 ? `${card.unassigned} ⚠` : card.unassigned}
-        </td>
+        <td className={`num${free < 0 ? ' warn' : free === 0 ? ' dim' : ''}`}>{free}</td>
       </tr>
 
       {expanded && (
         <tr>
-          <td colSpan={6} style={{ padding: '0.85rem 1.25rem 0.85rem 2.5rem', background: '#0f1119', borderTop: '1px solid var(--border)' }}>
-            <div className="section-label" style={{ marginBottom: '0.75rem' }}>
-              Assign copies of "{card.card_name}"
-            </div>
+          <td colSpan={6} className="expand-cell">
             {localLocations.map((loc) => (
               <AssignmentStepper
                 key={loc.deck_id}
