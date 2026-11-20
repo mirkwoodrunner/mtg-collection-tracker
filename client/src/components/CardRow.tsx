@@ -23,15 +23,15 @@ export default function CardRow({ card, onAssignmentChanged }: Props) {
 
   return (
     <>
-      <tr className="clickable" onClick={() => setExpanded((e) => !e)} aria-expanded={expanded}>
+      <tr className="clickable card-tr" onClick={() => setExpanded((e) => !e)} aria-expanded={expanded}>
         <td className="card-name">
           <span className="caret" aria-hidden="true">{expanded ? '▼' : '▶'}</span>
           {card.card_name}
         </td>
-        <td className="num">{card.owned}</td>
-        <td className="num">{card.total_needed}</td>
-        <td className={`num${shortfall > 0 ? ' warn' : ' dim'}`}>{shortfall > 0 ? shortfall : '—'}</td>
-        <td>
+        <td className="num stat c-own" data-label="Own">{card.owned}</td>
+        <td className="num stat c-need" data-label="Need">{card.total_needed}</td>
+        <td className={`num stat c-short${shortfall > 0 ? ' warn' : ' dim'}`} data-label="Short">{shortfall > 0 ? shortfall : '—'}</td>
+        <td className="c-decks">
           <div className="chips">
             {localLocations.map((loc) => (
               <span key={loc.deck_id} className={`chip${Number(loc.quantity_assigned) === 0 ? ' empty' : ''}`}>
@@ -40,11 +40,11 @@ export default function CardRow({ card, onAssignmentChanged }: Props) {
             ))}
           </div>
         </td>
-        <td className={`num${free < 0 ? ' warn' : free === 0 ? ' dim' : ''}`}>{free}</td>
+        <td className={`num stat c-free${free < 0 ? ' warn' : free === 0 ? ' dim' : ''}`} data-label="Free">{free}</td>
       </tr>
 
       {expanded && (
-        <tr>
+        <tr className="expand-tr">
           <td colSpan={6} className="expand-cell">
             {localLocations.map((loc) => (
               <AssignmentStepper

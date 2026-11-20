@@ -74,7 +74,18 @@ export default function CardsPage() {
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
         />
-        <span className="dim mono" style={{ fontSize: 13 }}>{displayed.length}</span>
+        <select
+          className="input sort-select"
+          aria-label="Sort cards"
+          value={sortKey}
+          onChange={(e) => { const k = e.target.value as SortKey; setSortKey(k); setSortAsc(k === 'card_name'); }}
+        >
+          <option value="shortfall">Sort: Most short</option>
+          <option value="card_name">Sort: Name</option>
+          <option value="owned">Sort: Most owned</option>
+          <option value="total_needed">Sort: Most needed</option>
+        </select>
+        <span className="dim mono toolbar-count">{displayed.length}</span>
         {cards.some((c) => Number(c.unassigned) < 0) && (
           <span className="warn" style={{ fontSize: 13 }}>Some cards have more copies assigned than owned</span>
         )}
@@ -86,7 +97,7 @@ export default function CardsPage() {
         </p>
       ) : (
         <div className="table-wrap">
-          <table className="tbl">
+          <table className="tbl tbl-stack">
             <thead>
               <tr>
                 <th className="sortable" onClick={() => handleSort('card_name')}>Card{arrow('card_name')}</th>
