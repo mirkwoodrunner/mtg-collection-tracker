@@ -68,7 +68,17 @@ export default function TokensPage() {
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
         />
-        <span className="dim mono" style={{ fontSize: 13 }}>{displayed.length}</span>
+        <select
+          className="input sort-select"
+          aria-label="Sort tokens"
+          value={sortKey}
+          onChange={(e) => { setSortKey(e.target.value as SortKey); setSortAsc(true); }}
+        >
+          <option value="card_name">Sort: Name</option>
+          <option value="colors">Sort: Color</option>
+          <option value="type_line">Sort: Type</option>
+        </select>
+        <span className="dim mono toolbar-count">{displayed.length}</span>
       </div>
 
       {tokens.length === 0 && !filter ? (
@@ -77,7 +87,7 @@ export default function TokensPage() {
         <p className="empty-state">No tokens match.</p>
       ) : (
         <div className="table-wrap">
-          <table className="tbl">
+          <table className="tbl tbl-stack">
             <thead>
               <tr>
                 <th className="sortable" onClick={() => handleSort('card_name')}>Name{arrow('card_name')}</th>
@@ -90,13 +100,13 @@ export default function TokensPage() {
             </thead>
             <tbody>
               {displayed.map((token, i) => (
-                <tr key={i}>
-                  <td className="card-name" style={{ whiteSpace: 'nowrap' }}>{token.card_name}</td>
-                  <td className="dim" style={{ whiteSpace: 'nowrap' }}>{formatColors(token.colors)}</td>
-                  <td className="dim" style={{ whiteSpace: 'nowrap' }}>{token.type_line ?? '—'}</td>
-                  <td style={{ maxWidth: 300 }}>{token.oracle_text ?? ''}</td>
-                  <td className="num">{token.power != null ? `${token.power}/${token.toughness}` : ''}</td>
-                  <td>
+                <tr key={i} className="token-tr">
+                  <td className="card-name nowrap t-name">{token.card_name}</td>
+                  <td className="dim nowrap t-color">{formatColors(token.colors)}</td>
+                  <td className="dim nowrap t-type">{token.type_line ?? '—'}</td>
+                  <td className="t-text">{token.oracle_text ?? ''}</td>
+                  <td className="num t-pt">{token.power != null ? `${token.power}/${token.toughness}` : ''}</td>
+                  <td className="t-decks">
                     <div className="chips">
                       {token.deck_names.map((name) => (
                         <span key={name} className="chip">{name}</span>
