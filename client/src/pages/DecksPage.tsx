@@ -18,16 +18,17 @@ export default function DecksPage({ decks, loading, error, onAdded }: Props) {
     getCards().then(setCards).catch(() => setCards([]));
   }, [decks.length]);
 
-  // Per deck: copies needed vs copies assigned (capped at needed), basic lands excluded.
+  // Per deck: copies needed vs copies assigned (capped at needed).
+  // Basic lands count toward the total and are always treated as in the box.
   const stats = useMemo(() => {
     const m = new Map<number, { inBox: number; total: number }>();
     for (const c of cards) {
-      if (BASIC_LANDS.has(c.card_name)) continue;
+      const isBasic = BASIC_LANDS.has(c.card_name);
       for (const loc of c.locations ?? []) {
         const s = m.get(loc.deck_id) ?? { inBox: 0, total: 0 };
         const needed = Number(loc.quantity_needed);
         s.total += needed;
-        s.inBox += Math.min(Number(loc.quantity_assigned), needed);
+        s.inBox += isBasic ? needed : Math.min(Number(loc.quantity_assigned), needed);
         m.set(loc.deck_id, s);
       }
     }
