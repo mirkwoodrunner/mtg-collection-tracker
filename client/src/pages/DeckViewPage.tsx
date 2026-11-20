@@ -77,10 +77,11 @@ export default function DeckViewPage({ deckId, decks, decksLoading, onRemoved }:
     return out;
   }, [details]);
 
-  const counted = rows.filter((r) => !BASIC_LANDS.has(r.card_name));
-  const total = counted.reduce((s, r) => s + Number(r.quantity_needed), 0);
-  const inBox = counted.reduce((s, r) => s + r.inBox, 0);
-  const shortCount = counted.filter((r) => r.inBox < Number(r.quantity_needed)).length;
+  // Basic lands count toward the deck size but are always treated as in the box.
+  const boxed = (r: Row) => (BASIC_LANDS.has(r.card_name) ? Number(r.quantity_needed) : r.inBox);
+  const total = rows.reduce((s, r) => s + Number(r.quantity_needed), 0);
+  const inBox = rows.reduce((s, r) => s + boxed(r), 0);
+  const shortCount = rows.filter((r) => boxed(r) < Number(r.quantity_needed)).length;
 
   function applyAssignment(cardName: string, changes: Map<number, number>) {
     setCards((prev) =>
