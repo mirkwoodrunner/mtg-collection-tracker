@@ -8,10 +8,16 @@ const TYPE_ORDER = [
   'Enchantment', 'Artifact', 'Land', 'Other',
 ];
 
+// Which category wins when a card has several types (e.g. Artifact Creature).
+const TYPE_PRIORITY = [
+  'Land', 'Creature', 'Planeswalker', 'Artifact', 'Enchantment', 'Battle',
+  'Instant', 'Sorcery',
+];
+
 function primaryType(cardType: string | null): string {
   if (!cardType) return 'Other';
   const upper = cardType.split('—')[0].trim();
-  for (const t of TYPE_ORDER) if (upper.includes(t)) return t;
+  for (const t of TYPE_PRIORITY) if (upper.includes(t)) return t;
   return 'Other';
 }
 
